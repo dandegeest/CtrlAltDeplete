@@ -2,6 +2,8 @@
 
 A MIDI-controlled Strudel project that uses Processing to bridge between physical controls and Strudel's MIDI capabilities.
 
+![Ctrl+Alt+Deplete Interface](cad.png)
+
 ## Setup
 
 ### 1. Required Software
@@ -23,7 +25,7 @@ A MIDI-controlled Strudel project that uses Processing to bridge between physica
 
 ### 4. Strudel Setup
 1. Open [Strudel](https://strudel.tidalcycles.org/) in your browser
-2. Copy and paste the contents of `midi_controlled_strudel.js` into the editor
+2. Copy and paste the contents of `CtrlAltDeplete.js` into the editor
 3. The code uses Strudel's `cc()` function to receive MIDI Control Change messages:
    ```javascript
    // Example of using MIDI CC values in Strudel
@@ -40,7 +42,7 @@ The Processing sketch (`Deplete.pde`) can receive input in two ways:
 
 #### Mouse Control
 - Click and drag vertically in the control area to send MIDI values
-- Use number keys 1-4 to change the CC number being controlled
+- Use number keys 1-5 to change the CC number being controlled
 - The vertical position maps to MIDI values (0-127)
 
 #### Serial Control
@@ -49,18 +51,19 @@ The Processing sketch (`Deplete.pde`) can receive input in two ways:
 
 ### Strudel Control
 The Strudel code uses the `cc()` function to map MIDI Control Change messages to various parameters:
-- CC1: Controls the first parameter
-- CC2: Controls the second parameter
-- CC3: Controls the third parameter
-- CC4: Controls the fourth parameter
+- CC1: Controls master volume
+- CC2: Controls delay amount
+- CC3: Controls delay time
+- CC4: Controls speed
+- CC5: Controls slow parameter
 
 Example usage in Strudel:
 ```javascript
-// Map MIDI CC1 to control the volume of a sound
-s("bd").cc(1, 0.5)
+// Map MIDI CC1 to control master volume
+stack(...).gain(cc(1).range(0,1))
 
-// Map MIDI CC2 to control the cutoff frequency of a filter
-s("hh").cc(2, 0.8)
+// Map MIDI CC2 to control delay
+s("pattern").delay(cc(2).range(0,1))
 ```
 
 ## Troubleshooting
