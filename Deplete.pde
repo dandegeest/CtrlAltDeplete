@@ -17,6 +17,7 @@ boolean portFound = false;
 
 // MIDI parameters
 int currentCC = 1;  // Default CC number
+int[] ccValues = new int[6];  // Array to store values for CC 1-5 (index 0 unused)
 int currentValue = 0;  // Current MIDI value (0-127)
 
 // Mouse control
@@ -79,26 +80,9 @@ void setup() {
 
 void draw() {
   background(0);
-  fill(255);
-  textAlign(CENTER);
-  textSize(20);
-  text("MIDI Controller", width/2, 40);
   
-  // Display connection status
-  textSize(14);
-  text("Serial Status: " + getSerialStatus(), width/2, 80);
-  text("MIDI Status: " + (midiConnected ? "Connected" : "Not Connected"), width/2, 100);
-  text("MIDI CC: " + currentCC, width/2, 140);
-  text("MIDI Value: " + currentValue, width/2, 160);
-  text("Press '1-4' to change CC number", width/2, 200);
-  text("Click and drag to send MIDI", width/2, 220);
-  
-  // Display port information
-  textSize(12);
-  text("Target COM Port: " + targetCOMPort, width/2, 240);
-  if (!portFound) {
-    text("Port not found!", width/2, 260);
-  }
+  // Draw HUD-style interface
+  drawHUD();
   
   // Draw control area
   stroke(255);
@@ -111,8 +95,61 @@ void draw() {
     float y = constrain(mouseY, 100, 200);
     rect(50, y, 300, 1);
     currentValue = (int)map(y, 200, 100, 0, 127);
+    ccValues[currentCC] = currentValue;  // Store the value
     sendMIDI(currentCC, currentValue);
   }
+}
+
+void drawHUD() {
+  // Title
+  fill(255);
+  textAlign(CENTER);
+  textSize(24);
+  text("MIDI Controller", width/2, 40);
+  
+  // Connection status
+  textSize(12);
+  fill(serialConnected ? color(0, 255, 0) : color(255, 0, 0));
+  text("Serial: " + getSerialStatus(), 60, 20);
+  fill(midiConnected ? color(0, 255, 0) : color(255, 0, 0));
+  text("MIDI: " + (midiConnected ? "Connected" : "Not Connected"), width-60, 20);
+  
+  // Draw CC value displays - all at same Y position
+  float fixedY = 80;  // Fixed Y position for all displays
+  for (int i = 1; i <= 5; i++) {
+    drawCCDisplay(i, fixedY);
+  }
+  
+  // Instructions
+  fill(255, 150);
+  textSize(12);
+  text("Press '1-5' to select CC | Click and drag to control", width/2, height - 20);
+}
+
+void drawCCDisplay(int ccNum, float yPos) {
+  float boxWidth = 50;  // Made slightly smaller to fit 5 boxes
+  float boxHeight = 40;
+  float spacing = 15;  // Slightly reduced spacing
+  float totalWidth = (boxWidth * 5) + (spacing * 4);  // Total width for 5 boxes
+  float startX = (width - totalWidth) / 2;  // Starting X position to center all boxes
+  float xPos = startX + ((ccNum-1) * (boxWidth + spacing));
+  
+  // Draw box
+  noFill();
+  stroke(ccNum == currentCC ? color(0, 255, 0) : color(255));
+  rect(xPos, yPos, boxWidth, boxHeight);
+  
+  // Draw value bar
+  fill(50, 150, 255, 150);
+  float valueHeight = map(ccValues[ccNum], 0, 127, 0, boxHeight);
+  rect(xPos, yPos + boxHeight - valueHeight, boxWidth, valueHeight);
+  
+  // Draw text
+  fill(255);
+  textSize(12);
+  textAlign(CENTER);
+  text("CC" + ccNum, xPos + boxWidth/2, yPos - 5);
+  text(ccValues[ccNum], xPos + boxWidth/2, yPos + boxHeight/2 + 5);
 }
 
 String getSerialStatus() {
@@ -134,13 +171,14 @@ void mouseDragged() {
   if (mousePressed) {
     float y = constrain(mouseY, 100, 200);
     currentValue = (int)map(y, 200, 100, 0, 127);
+    ccValues[currentCC] = currentValue;  // Store the value
     sendMIDI(currentCC, currentValue);
   }
 }
 
 void keyPressed() {
-  // Change CC number with keys 1-4
-  if (key >= '1' && key <= '4') {
+  // Change CC number with keys 1-5
+  if (key >= '1' && key <= '5') {
     currentCC = key - '0';
     println("Changed CC to: " + currentCC);
   }
@@ -152,6 +190,7 @@ void sendMIDI(int cc, int value) {
       ShortMessage message = new ShortMessage();
       message.setMessage(ShortMessage.CONTROL_CHANGE, 0, cc, value);
       receiver.send(message, -1);
+      ccValues[cc] = value;  // Store the value
       println("Sent MIDI CC" + cc + ": " + value);
     } catch (Exception e) {
       println("Error sending MIDI: " + e.getMessage());
@@ -173,6 +212,7 @@ void serialEvent(Serial p) {
       try {
         int value = Integer.parseInt(inString);
         currentValue = (int)map(value, 0, 1023, 0, 127);
+        ccValues[currentCC] = currentValue;  // Store the value
         sendMIDI(currentCC, currentValue);
       } catch (NumberFormatException e) {
         println("Not a number: " + inString);
