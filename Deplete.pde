@@ -8,7 +8,7 @@ Sequencer sequencer;  // MIDI sequencer
 
 // Configuration
 String loopMIDIPort = "MiDDi";  // Name of the loopMIDI port
-String targetCOMPort = "COM6";  // Name of the COM port to connect to
+String targetCOMPort = "COM3";  // Name of the COM port to connect to
 
 // Status flags
 boolean serialConnected = false;
@@ -23,6 +23,10 @@ int currentValue = 0;  // Current MIDI value (0-127)
 // Mouse control
 boolean mousePressed = false;
 int lastMouseY = 0;
+
+// Add timing variables at the top with other variables
+long lastTriggerTime = 0;
+boolean isDelaying = false;
 
 void setup() {
   size(400, 300);
@@ -40,6 +44,12 @@ void setup() {
         receiver = device.getReceiver();
         midiConnected = true;
         println("Connected to MIDI device: " + info.getName());
+        
+        // Initialize all CC values to 64
+        for (int i = 1; i <= 5; i++) {
+          ccValues[i] = 64;
+          sendMIDI(i, 64);
+        }
         break;
       }
     }
@@ -208,14 +218,38 @@ void serialEvent(Serial p) {
     if (inString != null) {
       inString = trim(inString);
       println("Received: " + inString);
-      // Map serial value to MIDI range (0-127)
-      try {
-        int value = Integer.parseInt(inString);
-        currentValue = (int)map(value, 0, 1023, 0, 127);
-        ccValues[currentCC] = currentValue;  // Store the value
-        sendMIDI(currentCC, currentValue);
-      } catch (NumberFormatException e) {
-        println("Not a number: " + inString);
+      
+      // Split the string at the colon
+      String[] values = split(inString, ':');
+      if (values.length == 2) {
+        try {
+          int firstValue = Integer.parseInt(values[0]);
+          int secondValue = Integer.parseInt(values[1]);
+          
+          // If first value > 90, start delay timer
+          if (firstValue > 90 && !isDelaying) {
+            isDelaying = true;
+            lastTriggerTime = millis();
+            println("Starting 2-second delay");
+          }
+          
+          // Check if delay has elapsed
+          if (isDelaying && millis() - lastTriggerTime >= 2000) {
+            sendMIDI(1, 0);
+            isDelaying = false;
+            println("Delay complete, sent CC1 0");
+          }
+          
+          // If value is 90 or less, send random value
+          if (firstValue <= 90) {
+            int randomValue = (int)random(10, 128);
+            sendMIDI(1, randomValue);
+          }
+        } catch (NumberFormatException e) {
+          println("Invalid number format: " + inString);
+        }
+      } else {
+        println("Invalid format: " + inString);
       }
     }
   } catch (Exception e) {
