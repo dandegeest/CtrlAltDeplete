@@ -4,6 +4,8 @@ A MIDI-controlled Strudel project that uses Processing to bridge between physica
 
 ![Ctrl+Alt+Deplete Interface](cad.png)
 
+![Soundscape Visualization](soundscape.png)
+
 ## Setup
 
 ### 1. Required Software
@@ -26,7 +28,7 @@ A MIDI-controlled Strudel project that uses Processing to bridge between physica
 ### 4. Strudel Setup
 1. Open [Strudel](https://strudel.tidalcycles.org/) in your browser
 2. Copy and paste the contents of `CtrlAltDeplete.js` into the editor
-3. The code uses Strudel's `cc()` function to receive MIDI Control Change messages:
+3. The code uses Strudel's `midin()` function to receive MIDI Control Change messages:
    ```javascript
    // Example of using MIDI CC values in Strudel
    s("bd").cc(1, 0.5) // CC1 controls the volume of the bass drum

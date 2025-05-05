@@ -23,7 +23,10 @@ bool isWiping1 = false;
 // Strip 2 variables
 int currentPixel2 = 0;
 uint32_t currentColor2 = 0;
+uint32_t nextColor2 = 0;  // Add variable for next color
 bool isWiping2 = false;
+bool isReversing2 = false;  // Add flag for reverse direction
+int colorCount2 = 0;  // Track how many colors we've shown
 
 void setup() {
 #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
@@ -55,11 +58,11 @@ void loop() {
   Serial.println();
 
   // Handle LED effects based on sensor values
-  if (sensor1 < 90 && !isWiping1) {
+  if (sensor1 < 50 && !isWiping1) {
     startColorWipe(strip.Color(255, 0, 0));
   }
   
-  if (sensor2 == 0 && !isWiping2) {
+  if (sensor2 > 50 && !isWiping2) {
     startColorWipe2(strip2.Color(255, 0, 0));
   }
 
@@ -109,20 +112,44 @@ void startColorWipe2(uint32_t color) {
   currentPixel2 = 0;
   currentColor2 = color;
   isWiping2 = true;
+  isReversing2 = false;
+  if (color != strip2.Color(0, 0, 0)) {
+    colorCount2++;
+  }
 }
 
 void updateColorWipe2() {
-  if (currentPixel2 < strip2.numPixels()) {
-    strip2.setPixelColor(currentPixel2, currentColor2);
-    strip2.show();
-    currentPixel2++;
+  if (!isReversing2) {
+    // Forward wipe
+    if (currentPixel2 < strip2.numPixels()) {
+      strip2.setPixelColor(currentPixel2, currentColor2);
+      strip2.show();
+      currentPixel2++;
+    } else {
+      isWiping2 = false;
+      if (colorCount2 == 0) {
+        // First activation - start with random color
+        startColorWipe2(strip2.Color(random(255), random(255), random(255)));
+      } else if (colorCount2 == 1) {
+        // After first color - start second random color
+        startColorWipe2(strip2.Color(random(255), random(255), random(255)));
+      } else {
+        // After second color - start reverse wipe to black
+        isReversing2 = true;
+        currentPixel2 = strip2.numPixels() - 1;
+        isWiping2 = true;
+        colorCount2 = 0;
+      }
+    }
   } else {
-    isWiping2 = false;
-    // Start next color in sequence
-    if (currentColor2 == strip2.Color(255, 0, 0)) {
-      startColorWipe2(strip2.Color(139, 64, 18));
-    } else if (currentColor2 == strip2.Color(139, 64, 18)) {
-      startColorWipe2(strip2.Color(0, 0, 0));
+    // Reverse wipe to black
+    if (currentPixel2 >= 0) {
+      strip2.setPixelColor(currentPixel2, strip2.Color(0, 0, 0));
+      strip2.show();
+      currentPixel2--;
+    } else {
+      isWiping2 = false;
+      isReversing2 = false;
     }
   }
 }

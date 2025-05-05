@@ -28,6 +28,13 @@ int lastMouseY = 0;
 long lastTriggerTime = 0;
 boolean isDelaying = false;
 
+// Add animation variables
+float sensor1Value = 0;
+float sensor2Value = 0;
+float targetSensor1Value = 0;
+float targetSensor2Value = 0;
+float animationSpeed = 0.1;
+
 void setup() {
   size(400, 300);
   background(0);
@@ -44,12 +51,6 @@ void setup() {
         receiver = device.getReceiver();
         midiConnected = true;
         println("Connected to MIDI device: " + info.getName());
-        
-        // Initialize all CC values to 64
-        for (int i = 1; i <= 5; i++) {
-          ccValues[i] = 64;
-          sendMIDI(i, 64);
-        }
         break;
       }
     }
@@ -91,8 +92,15 @@ void setup() {
 void draw() {
   background(0);
   
+  // Smooth animation of sensor values
+  sensor1Value = lerp(sensor1Value, targetSensor1Value, animationSpeed);
+  sensor2Value = lerp(sensor2Value, targetSensor2Value, animationSpeed);
+  
   // Draw HUD-style interface
   drawHUD();
+  
+  // Draw sensor visualization
+  drawSensorVisualization();
   
   // Draw control area
   stroke(255);
@@ -210,6 +218,76 @@ void sendMIDI(int cc, int value) {
   }
 }
 
+void drawSensorVisualization() {
+  // Draw sensor 1 visualization (left side)
+  float sensor1Height = map(sensor1Value, 0, 1023, 0, height - 100);
+  fill(255, 0, 0, 150);
+  noStroke();
+  rect(50, height - sensor1Height - 50, 50, sensor1Height);
+  
+  // Draw sensor 2 visualization (right side)
+  float sensor2Height = map(sensor2Value, 0, 1023, 0, height - 100);
+  fill(0, 255, 0, 150);
+  noStroke();
+  rect(width - 100, height - sensor2Height - 50, 50, sensor2Height);
+  
+  // Draw threshold lines
+  stroke(255, 100);
+  // Sensor 1 threshold (90)
+  float threshold1Y = height - map(90, 0, 1023, 0, height - 100) - 50;
+  line(50, threshold1Y, 100, threshold1Y);
+  // Sensor 2 threshold (50)
+  float threshold2Y = height - map(50, 0, 1023, 0, height - 100) - 50;
+  line(width - 100, threshold2Y, width - 50, threshold2Y);
+  
+  // Draw trigger indicators
+  // Sensor 1 trigger (value > 90)
+  if (sensor1Value > 90) {
+    fill(255, 0, 0);
+    noStroke();
+    ellipse(75, 30, 20, 20);
+    if (isDelaying) {
+      // Draw pulsing effect during delay
+      float pulseSize = 20 + sin(frameCount * 0.1) * 5;
+      fill(255, 0, 0, 100);
+      ellipse(75, 30, pulseSize, pulseSize);
+    }
+  }
+  
+  // Sensor 2 trigger (value > 50)
+  if (sensor2Value > 50) {
+    fill(0, 255, 0);
+    noStroke();
+    ellipse(width - 75, 30, 20, 20);
+  } else if (sensor2Value <= 50 && isDelaying) {
+    // Draw pulsing effect during delay
+    fill(0, 255, 0);
+    noStroke();
+    ellipse(width - 75, 30, 20, 20);
+    float pulseSize = 20 + sin(frameCount * 0.1) * 5;
+    fill(0, 255, 0, 100);
+    ellipse(width - 75, 30, pulseSize, pulseSize);
+  }
+  
+  // Draw labels
+  fill(255);
+  textAlign(LEFT);
+  text("Sensor 1: " + (int)sensor1Value, 50, height - 30);
+  textAlign(RIGHT);
+  text("Sensor 2: " + (int)sensor2Value, width - 50, height - 30);
+  
+  // Draw trigger status text only when max threshold is exceeded
+  textAlign(CENTER);
+  if (sensor1Value > 90) {
+    fill(255, 0, 0);
+    text("TRIGGERED", 75, 60);
+  }
+  if (sensor2Value > 50) {
+    fill(0, 255, 0);
+    text("TRIGGERED", width - 75, 60);
+  }
+}
+
 void serialEvent(Serial p) {
   if (!serialConnected || !portFound) return;
   
@@ -217,7 +295,6 @@ void serialEvent(Serial p) {
     String inString = p.readStringUntil('\n');
     if (inString != null) {
       inString = trim(inString);
-      println("Received: " + inString);
       
       // Split the string at the colon
       String[] values = split(inString, ':');
@@ -226,34 +303,29 @@ void serialEvent(Serial p) {
           int firstValue = Integer.parseInt(values[0]);
           int secondValue = Integer.parseInt(values[1]);
           
-          // If first value > 90, start delay timer
-          if (firstValue > 90 && !isDelaying) {
-            isDelaying = true;
-            lastTriggerTime = millis();
-            println("Starting 2-second delay");
-          }
+          // Update animation targets
+          targetSensor1Value = firstValue;
+          targetSensor2Value = secondValue;
           
+          // If either sensor exceeds threshold, send random CC1 value and reset delay
+          if (firstValue < 50 || secondValue > 1050) {
+            int randomValue = (int)random(10, 128);  // random() is exclusive of max value
+            sendMIDI(1, randomValue);
+            isDelaying = true;  // Start new delay
+            lastTriggerTime = millis();  // Reset the timer
+          } 
           // Check if delay has elapsed
-          if (isDelaying && millis() - lastTriggerTime >= 2000) {
+          else if (isDelaying && millis() - lastTriggerTime >= 2000) {
             sendMIDI(1, 0);
             isDelaying = false;
-            println("Delay complete, sent CC1 0");
           }
           
-          // If value is 90 or less, send random value
-          if (firstValue <= 90) {
-            int randomValue = (int)random(10, 128);
-            sendMIDI(1, randomValue);
-          }
         } catch (NumberFormatException e) {
-          println("Invalid number format: " + inString);
+          // Invalid number format
         }
-      } else {
-        println("Invalid format: " + inString);
       }
     }
   } catch (Exception e) {
-    println("Error reading serial: " + e.getMessage());
     serialConnected = false;
   }
 }
