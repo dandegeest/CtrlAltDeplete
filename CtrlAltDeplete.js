@@ -22,12 +22,6 @@ $: stack(
            .room("<0 .2 .4 .6 .8 1>").color("red")
            .speed(cc(4).range(-1,2))).spiral(),
 
-  // // Pattern 2: Pentatonic sequence
-  // n("0 <-1 <[-2 .. 5] [5 .. -2]>>".add("0,-2").add("<0 -1>/2"))
-  //   .scale("f4:minor:pentatonic").dec(.1)
-  //   .room(.1).pdec(.02).hpf(200).lpf(500)
-  //   .mask("<1@16 0@4>"),
-
   // Pattern 3: Sine wave pattern
   note("<f1(3,8) [- [c2 c3]]>").s("sine").dist(2)
     .att("<0 .5>")

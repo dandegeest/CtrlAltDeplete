@@ -1,0 +1,101 @@
+# Ctrl+Alt+Deplete: An Interactive E-Waste Sculpture
+
+Ctrl+Alt+Deplete is a sculptural installation that brings to life the image of a solitary tree mutated with electronic waste, emerging from a landfill. Constructed entirely from discarded electronics—keyboards, wires, broken monitors, motherboards, and phone fragments—alongside other post-consumer trash, the tree stands as a haunting monument to our age of overconsumption and obsolescence.
+
+## Installation Components
+
+### 1. Physical Sculpture
+- Constructed from e-waste and consumer trash
+- Tree-like structure emerging from simulated landfill
+- Materials include:
+  - Discarded keyboards
+  - Electronic wires
+  - Broken monitors
+  - Motherboards
+  - Phone fragments
+  - Other post-consumer waste
+
+### 2. Interactive Control System
+- Built using Processing
+- Translates viewer interaction into MIDI signals
+- Controls include:
+  - Mouse movement tracking
+  - Position-based parameter modulation
+  - Real-time response to viewer presence
+
+### 3. Sound Generation
+- Implemented in Strudel (TidalCycles)
+- Complex, layered soundscape featuring:
+  - Environmental speech synthesis
+  - Multiple sound patterns
+  - Real-time modulation
+  - Visual feedback through Hydra
+
+## Technical Architecture
+
+### Processing Component
+- Handles interactive elements
+- Converts physical interaction to MIDI
+- Uses loopMIDI for virtual MIDI communication
+- Controls multiple parameters:
+  - Master volume
+  - Delay effects
+  - Room/reverb
+  - Pattern speed
+  - Panning
+
+### Sound Design
+- Layered composition with:
+  - Speech synthesis of environmental terms
+  - Sine wave patterns
+  - Environmental sound effects
+  - Number sequences
+  - Real-time modulation
+  - Visual feedback
+
+### Integration
+- Uses loopMIDI as virtual MIDI bridge
+- Processing sends MIDI control messages (CC values 1-5)
+- Strudel receives and processes MIDI data
+- Creates responsive sound environment
+
+## Thematic Elements
+
+### Environmental Commentary
+- Electronic waste as artistic medium
+- Consumer culture critique
+- Planned obsolescence
+- Resource depletion
+- Environmental degradation
+
+### Interactive Experience
+- Viewer presence affects sound generation
+- Physical interaction creates unique soundscapes
+- Real-time response to movement
+- Multi-sensory engagement
+
+## Technical Requirements
+
+### Software
+- Processing
+- loopMIDI
+- Modern web browser (for Strudel)
+
+### Hardware
+- Computer with MIDI capabilities
+- Audio output system
+- Physical installation space
+
+## Installation Notes
+- Ensure proper MIDI routing through loopMIDI
+- Verify Processing sketch connectivity
+- Test Strudel sound generation
+- Calibrate interactive elements
+- Monitor system performance
+
+## Maintenance
+- Regular hardware inspection
+- Software updates as needed
+- MIDI connection verification
+- Audio system checks
+- Interactive element calibration 
