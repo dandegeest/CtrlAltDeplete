@@ -1,6 +1,6 @@
 # Ctrl+Alt+Deplete
 
-A MIDI-controlled Strudel project that uses Processing to bridge between physical controls and Strudel's MIDI capabilities.
+A MIDI-controlled [Strudel project](https://strudel.cc/?EqzoQ2WHfCU8) that uses Processing to bridge between physical controls and Strudel's MIDI capabilities.
 
 [@Capacity Installation](AtCapacity/overview.md)
 
