@@ -2,7 +2,9 @@
 
 ![Project Logo](cad-logo.png)
 
-[Project Video](CtrlAltDeplete.mp4)
+[Process Video](CtrlAltDeplete.mp4)
+
+[Project Website](https://iowasteland.com/sage/)
 
 Ctrl+Alt+Deplete is a collaborative studio project that explores the intersection of sustainability, sound design, and interactive technology. In an era of material excess, this project reimagines waste as a valuable resource for creating unique sonic experiences. Through the integration of upcycled materials, Arduino, and Processing, we're crafting a mobile sound-producing object that transforms discarded items into an interactive auditory experience.
 
