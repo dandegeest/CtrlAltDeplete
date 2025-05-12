@@ -62,8 +62,8 @@ void loop() {
     startColorWipe(strip.Color(255, 0, 0));
   }
   
-  if (sensor2 > 50 && !isWiping2) {
-    startColorWipe2(strip2.Color(255, 0, 0));
+  if (sensor2 > 100 && !isWiping2 && !isReversing2 && colorCount2 == 0) {
+    startColorWipe2(strip2.Color(random(255), random(255), random(255)));
   }
 
   // Update LED effects if active
@@ -150,6 +150,9 @@ void updateColorWipe2() {
     } else {
       isWiping2 = false;
       isReversing2 = false;
+      // Clear all pixels to ensure they're off
+      strip2.clear();
+      strip2.show();
     }
   }
 }

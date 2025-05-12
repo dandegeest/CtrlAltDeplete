@@ -2,6 +2,8 @@
 
 A MIDI-controlled Strudel project that uses Processing to bridge between physical controls and Strudel's MIDI capabilities.
 
+[@Capacity Installation](AtCapacity/overview.md)
+
 ![Ctrl+Alt+Deplete Interface](cad.png)
 
 ![Soundscape Visualization](soundscape.png)
